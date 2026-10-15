@@ -5,6 +5,11 @@ import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
 import com.antigravity.redmicompanion.util.NotificationHelper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MapsNotificationListenerService : NotificationListenerService() {
 
@@ -16,6 +21,7 @@ class MapsNotificationListenerService : NotificationListenerService() {
     private var lastInstruction: String = ""
     private var lastDistance: String = ""
     private var isCallRinging: Boolean = false
+    private var callJob: Job? = null
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         super.onNotificationPosted(sbn)
@@ -35,14 +41,10 @@ class MapsNotificationListenerService : NotificationListenerService() {
 
             if (title.isBlank() && text.isBlank()) return
 
-            // Nhận diện mũi tên chuẩn xác (↰, ↱, ⬆️, 🔄,...)
             val arrowEmoji = detectTurnArrow(title + " " + text)
-
-            // Trích xuất khoảng cách và thời gian còn lại
             val distanceInfo = if (subText.isNotBlank()) subText else "Google Maps"
             val instruction = if (title.isNotBlank()) title else text
 
-            // Chống spam thông báo trùng
             if (instruction == lastInstruction && distanceInfo == lastDistance) {
                 return
             }
@@ -52,7 +54,6 @@ class MapsNotificationListenerService : NotificationListenerService() {
 
             Log.d(TAG, "Navigating: $arrowEmoji $distanceInfo - $instruction")
 
-            // Gửi chỉ đường định dạng trực quan cho Redmi Watch
             NotificationHelper.sendMapsNotification(
                 context = applicationContext,
                 arrowEmoji = arrowEmoji,
@@ -63,53 +64,68 @@ class MapsNotificationListenerService : NotificationListenerService() {
         }
 
         // ==========================================
-        // 2. XỬ LÝ CUỘC GỌI ZALO ĐẾN (Hiện tên người gọi)
+        // 2. XỬ LÝ CUỘC GỌI ZALO & MESSENGER (Hiện tên người gọi)
         // ==========================================
-        if (pkg == ZALO_PACKAGE) {
+        if (pkg == ZALO_PACKAGE || pkg == MESSENGER_PACKAGE) {
             val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: ""
             val text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString() ?: ""
             val category = notification.category
+            val actions = notification.actions
 
-            val isZaloCall = category == Notification.CATEGORY_CALL ||
-                    text.contains("cuộc gọi", ignoreCase = true) ||
-                    text.contains("đang gọi", ignoreCase = true) ||
-                    text.contains("incoming call", ignoreCase = true)
-
-            if (isZaloCall && title.isNotBlank()) {
-                isCallRinging = true
-                Log.d(TAG, "Zalo Call from: $title")
-                NotificationHelper.sendVoipCallNotification(
-                    context = applicationContext,
-                    appName = "Zalo",
-                    callerName = title,
-                    callType = text.ifBlank { "Cuộc gọi đến..." }
-                )
+            // Nhận diện cuộc gọi qua nút bấm "Trả lời" / "Từ chối" hoặc category cuộc gọi
+            val hasCallAction = actions != null && actions.any { action ->
+                val at = action.title?.toString()?.lowercase() ?: ""
+                at.contains("từ chối") || at.contains("trả lời") ||
+                at.contains("decline") || at.contains("reject") ||
+                at.contains("answer")
             }
-            return
-        }
 
-        // ==========================================
-        // 3. XỬ LÝ CUỘC GỌI MESSENGER ĐẾN (Hiện tên người gọi)
-        // ==========================================
-        if (pkg == MESSENGER_PACKAGE) {
-            val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: ""
-            val text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString() ?: ""
-            val category = notification.category
-
-            val isMessengerCall = category == Notification.CATEGORY_CALL ||
+            val isCall = hasCallAction ||
+                    category == Notification.CATEGORY_CALL ||
                     text.contains("cuộc gọi", ignoreCase = true) ||
+                    title.contains("cuộc gọi", ignoreCase = true) ||
+                    text.contains("đang gọi", ignoreCase = true) ||
+                    title.contains("đang gọi", ignoreCase = true) ||
                     text.contains("calling", ignoreCase = true) ||
-                    text.contains("đang gọi", ignoreCase = true)
+                    text.contains("incoming", ignoreCase = true)
 
-            if (isMessengerCall && title.isNotBlank()) {
-                isCallRinging = true
-                Log.d(TAG, "Messenger Call from: $title")
+            if (isCall) {
+                val appName = if (pkg == ZALO_PACKAGE) "Zalo" else "Messenger"
+                var caller = title
+                if (title.equals("Zalo", ignoreCase = true) ||
+                    title.equals("Messenger", ignoreCase = true) ||
+                    title.contains("cuộc gọi", ignoreCase = true) ||
+                    title.isBlank()) {
+                    caller = text
+                }
+                if (caller.contains("từ ", ignoreCase = true)) {
+                    caller = caller.substringAfter("từ ").trim()
+                }
+                if (caller.isBlank()) {
+                    caller = if (title.isNotBlank()) title else "Có người đang gọi..."
+                }
+
+                if (!isCallRinging) {
+                    isCallRinging = true
+                    Log.d(TAG, "$appName call ringing from: $caller")
+                    startRingingLoop(appName, caller)
+                }
+            }
+        }
+    }
+
+    private fun startRingingLoop(appName: String, caller: String) {
+        callJob?.cancel()
+        callJob = CoroutineScope(Dispatchers.Default).launch {
+            while (isCallRinging) {
                 NotificationHelper.sendVoipCallNotification(
                     context = applicationContext,
-                    appName = "Messenger",
-                    callerName = title,
-                    callType = text.ifBlank { "Cuộc gọi thoại/video đến..." }
+                    appName = appName,
+                    callerName = caller,
+                    callType = "Đang đổ chuông..."
                 )
+                // Lặp lại mỗi 3.5 giây để đồng hồ rung liên tục theo chuông điện thoại
+                delay(3500)
             }
         }
     }
@@ -138,10 +154,10 @@ class MapsNotificationListenerService : NotificationListenerService() {
             lastInstruction = ""
             lastDistance = ""
         } else if (pkg == ZALO_PACKAGE || pkg == MESSENGER_PACKAGE) {
-            if (isCallRinging) {
-                isCallRinging = false
-                NotificationHelper.dismissVoipCallNotification(applicationContext)
-            }
+            isCallRinging = false
+            callJob?.cancel()
+            callJob = null
+            NotificationHelper.dismissVoipCallNotification(applicationContext)
         }
     }
 }

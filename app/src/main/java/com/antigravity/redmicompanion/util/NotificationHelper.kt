@@ -11,7 +11,7 @@ object NotificationHelper {
 
     private const val MAPS_CHANNEL_ID = "redmi_maps_nav_channel"
     private const val GEMINI_CHANNEL_ID = "redmi_gemini_channel"
-    private const val CALL_CHANNEL_ID = "redmi_voip_call_channel"
+    private const val CALL_CHANNEL_ID = "redmi_voip_call_channel_v2"
 
     private const val MAPS_NOTIF_ID = 1001
     private const val GEMINI_NOTIF_ID = 2002
@@ -107,8 +107,8 @@ object NotificationHelper {
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_CALL)
             .setVibrate(longArrayOf(0, 600, 250, 600, 250, 600))
-            .setOngoing(true)
-            .setAutoCancel(false)
+            .setOngoing(false)
+            .setAutoCancel(true)
 
         manager.notify(VOIP_CALL_NOTIF_ID, builder.build())
     }
