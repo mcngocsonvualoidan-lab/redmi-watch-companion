@@ -3,9 +3,11 @@ package com.antigravity.redmicompanion.util
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import com.antigravity.redmicompanion.R
 
 object NotificationHelper {
 
@@ -72,12 +74,13 @@ object NotificationHelper {
     fun sendMapsNotification(context: Context, arrowEmoji: String, title: String, distanceInfo: String, timeRemaining: String = "") {
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        // Tiêu đề to rõ: "↰ 11 m • Man Thiện"
         val topTitle = "$arrowEmoji $distanceInfo"
         val roadAndEta = if (timeRemaining.isNotBlank()) "$title (Còn: $timeRemaining)" else title
+        val logoBitmap = BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher)
 
         val builder = NotificationCompat.Builder(context, MAPS_CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_menu_directions)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setLargeIcon(logoBitmap)
             .setContentTitle(topTitle)
             .setContentText(roadAndEta)
             .setStyle(NotificationCompat.BigTextStyle().bigText("$topTitle\n$roadAndEta"))
@@ -98,9 +101,11 @@ object NotificationHelper {
 
         val title = "📞 $appName: $callerName"
         val content = if (callType.isNotBlank()) callType else "Đang gọi đến..."
+        val logoBitmap = BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher)
 
         val builder = NotificationCompat.Builder(context, CALL_CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.sym_action_call)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setLargeIcon(logoBitmap)
             .setContentTitle(title)
             .setContentText(content)
             .setStyle(NotificationCompat.BigTextStyle().bigText("$title\n$content"))
@@ -126,9 +131,11 @@ object NotificationHelper {
      */
     fun sendGeminiNotification(context: Context, question: String, answer: String) {
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val logoBitmap = BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher)
 
         val builder = NotificationCompat.Builder(context, GEMINI_CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setLargeIcon(logoBitmap)
             .setContentTitle("🤖 Gemini: $question")
             .setContentText(answer)
             .setStyle(NotificationCompat.BigTextStyle().bigText(answer))
