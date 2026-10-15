@@ -59,6 +59,7 @@ class MainActivity : AppCompatActivity() {
         checkAppUpdate(silent = true)
 
         setupListeners()
+        setupSuggestionChips()
 
         // Xử lý nếu được gọi từ thanh Quick Settings Tile
         if (intent.getBooleanExtra("EXTRA_START_VOICE", false)) {
@@ -69,6 +70,29 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         updatePermissionStatus()
+    }
+
+    private fun setupSuggestionChips() {
+        binding.chipWeather.setOnClickListener {
+            val prompt = "Thời tiết hôm nay thế nào?"
+            binding.etPrompt.setText(prompt)
+            saveApiKey()
+            askGeminiAndNotifyWatch(prompt)
+        }
+
+        binding.chipWater.setOnClickListener {
+            val prompt = "Nhắc nhở tôi uống nước và mẹo khỏe"
+            binding.etPrompt.setText(prompt)
+            saveApiKey()
+            askGeminiAndNotifyWatch(prompt)
+        }
+
+        binding.chipRoute.setOnClickListener {
+            val prompt = "Mẹo làm việc tập trung và hiệu quả hôm nay"
+            binding.etPrompt.setText(prompt)
+            saveApiKey()
+            askGeminiAndNotifyWatch(prompt)
+        }
     }
 
     private fun setupListeners() {
@@ -83,8 +107,13 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // Nút test bắn thông báo chỉ đường Maps mẫu sang đồng hồ (giống hình mẫu)
+        // Nút test bắn thông báo chỉ đường Maps mẫu sang đồng hồ
         binding.btnTestMapsNotify.setOnClickListener {
+            // Cập nhật mockup hiển thị trực quan
+            binding.tvMockArrow.text = "↰"
+            binding.tvMockRoad.text = "Đ. Man Thiện"
+            binding.tvMockDistance.text = "11 m • 1 phút • Google Maps"
+
             NotificationHelper.sendMapsNotification(
                 context = this,
                 arrowEmoji = "↰",
@@ -97,6 +126,11 @@ class MainActivity : AppCompatActivity() {
 
         // Nút test cuộc gọi Zalo có tên người gọi lên đồng hồ
         binding.btnTestCallNotify.setOnClickListener {
+            // Cập nhật mockup hiển thị trực quan
+            binding.tvMockArrow.text = "📞"
+            binding.tvMockRoad.text = "Nguyễn Văn A"
+            binding.tvMockDistance.text = "Cuộc gọi thoại đến • Zalo"
+
             NotificationHelper.sendVoipCallNotification(
                 context = this,
                 appName = "Zalo",
@@ -152,6 +186,12 @@ class MainActivity : AppCompatActivity() {
 
             result.onSuccess { answer ->
                 binding.tvGeminiStatus.text = "✅ Đã gửi phản hồi lên đồng hồ:\n$answer"
+
+                // Cập nhật mockup trên màn hình
+                binding.tvMockArrow.text = "✨"
+                binding.tvMockRoad.text = "Gemini AI"
+                binding.tvMockDistance.text = if (answer.length > 36) answer.take(36) + "..." else answer
+
                 // Đẩy thông báo lên màn hình Redmi Watch 5
                 NotificationHelper.sendGeminiNotification(
                     context = this@MainActivity,
@@ -167,13 +207,13 @@ class MainActivity : AppCompatActivity() {
     private fun updatePermissionStatus() {
         val isGranted = isNotificationListenerEnabled()
         if (isGranted) {
-            binding.tvPermissionStatus.text = "✅ Đã cấp quyền lắng nghe thông báo"
-            binding.tvPermissionStatus.setTextColor(Color.parseColor("#2E7D32"))
+            binding.tvPermissionStatus.text = "Đã kích hoạt đầy đủ quyền"
+            binding.tvPermissionStatus.setTextColor(Color.parseColor("#059669"))
             binding.btnGrantPermission.isEnabled = false
-            binding.btnGrantPermission.text = "Quyền đã sẵn sàng"
+            binding.btnGrantPermission.text = "✓ Quyền hệ thống đã sẵn sàng"
         } else {
-            binding.tvPermissionStatus.text = "⚠️ Chưa cấp quyền lắng nghe thông báo"
-            binding.tvPermissionStatus.setTextColor(Color.parseColor("#D32F2F"))
+            binding.tvPermissionStatus.text = "Chưa cấp quyền lắng nghe thông báo"
+            binding.tvPermissionStatus.setTextColor(Color.parseColor("#DC2626"))
             binding.btnGrantPermission.isEnabled = true
             binding.btnGrantPermission.text = "Mở cài đặt cấp quyền thông báo"
         }

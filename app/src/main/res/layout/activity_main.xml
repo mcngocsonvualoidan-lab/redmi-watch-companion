@@ -1,38 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F0F2F5"
-    android:padding="16dp">
+    android:background="@color/bg_app"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="36dp">
 
-        <!-- Title -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Redmi Watch 5 Companion"
-            android:textColor="@color/black"
-            android:textSize="22sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Cầu nối Google Maps &amp; Trợ lý Gemini AI cho Redmi Watch 5 Lite"
-            android:textColor="#666666"
-            android:textSize="13sp" />
-
-        <!-- Version & Auto Update Bar -->
+        <!-- ================= TOP APP BAR / BRANDING HEADER ================= -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <!-- App Logo with Squircle Border -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/stroke_card"
+                app:strokeWidth="1dp">
+
+                <ImageView
+                    android:id="@+id/ivAppLogo"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@mipmap/ic_launcher"
+                    android:contentDescription="App Logo" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Redmi Companion"
+                    android:textColor="@color/text_primary"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    android:text="By Son Designer • HyperOS Bridge"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- Auto Update Button Pill -->
+            <LinearLayout
+                android:id="@+id/btnCheckUpdate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_pill_update"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="6dp">
+
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:src="@drawable/ic_refresh"
+                    app:tint="@color/primary_blue" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="Cập nhật"
+                    android:textColor="@color/primary_blue"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Version & Connection Sub-Bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -40,11 +105,11 @@
                 android:id="@+id/tvCurrentVersion"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="#E2E8F0"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="3dp"
-                android:text="Phiên bản v1.2.0"
-                android:textColor="#334155"
+                android:background="@drawable/bg_pill_version"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:text="Phiên bản v1.5"
+                android:textColor="@color/text_secondary"
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
@@ -53,24 +118,42 @@
                 android:layout_height="1dp"
                 android:layout_weight="1" />
 
-            <TextView
-                android:id="@+id/btnCheckUpdate"
+            <!-- Active Protocol Pill -->
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="6dp"
-                android:text="🔄 Kiểm tra cập nhật"
-                android:textColor="@color/primary_blue"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+                android:background="@drawable/bg_badge_success"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp">
+
+                <View
+                    android:layout_width="6dp"
+                    android:layout_height="6dp"
+                    android:background="@drawable/bg_icon_circle_green" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:text="Mi Fitness BLE Ready"
+                    android:textColor="@color/success_green"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
         </LinearLayout>
 
-        <!-- Card 1: Quyền truy cập thông báo -->
+        <!-- ================= CARD 1: SYSTEM PERMISSION STATUS ================= -->
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardPermission"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp">
+            app:cardBackgroundColor="@color/surface_card"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/stroke_card"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -78,132 +161,91 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="1. Cấp quyền hệ thống"
-                    android:textColor="@color/primary_blue"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/tvPermissionStatus"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="Chưa cấp quyền lắng nghe thông báo"
-                    android:textColor="#D32F2F"
-                    android:textSize="14sp" />
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:background="@drawable/bg_icon_circle_blue">
 
-                <Button
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_shield_check"
+                            app:tint="@color/primary_blue" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Quyền Lắng Nghe Thông Báo"
+                            android:textColor="@color/text_primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvPermissionStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="Đang kiểm tra quyền hệ thống..."
+                            android:textColor="@color/text_secondary"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnGrantPermission"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:backgroundTint="@color/primary_blue"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="12dp"
                     android:text="Mở cài đặt cấp quyền thông báo"
-                    android:textAllCaps="false" />
+                    android:textAllCaps="false"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="12dp" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="💡 Chú ý: Hãy mở ứng dụng Mi Fitness > Thiết bị > Thông báo ứng dụng > BẬT cho phép ứng dụng này để thông báo được chuyển sang đồng hồ!"
-                    android:textColor="#555555"
-                    android:textSize="12sp" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Card 2: Google Maps Bridge -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="2. Cầu nối Google Maps"
-                    android:textColor="@color/primary_blue"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/switchMapsEnabled"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:checked="true"
-                    android:text="Tự động bắt điều hướng Google Maps"
-                    android:textSize="14sp" />
-
-                <Button
-                    android:id="@+id/btnTestMapsNotify"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Gửi thử chỉ đường mẫu (↰ 11 m • Man Thiện)"
-                    android:textAllCaps="false" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Card 3: Cuộc gọi Zalo & Messenger -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="3. Cuộc gọi Zalo &amp; Messenger"
-                    android:textColor="#2E7D32"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Tự động bắt cuộc gọi Zalo / Messenger và đẩy tên người gọi kèm rung chuông lên đồng hồ"
-                    android:textColor="#666666"
-                    android:textSize="13sp" />
-
-                <Button
-                    android:id="@+id/btnTestCallNotify"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                <!-- Helpful Tip Note -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="Gửi thử thông báo cuộc gọi Zalo có tên lên đồng hồ"
-                    android:textAllCaps="false" />
+                    android:background="@drawable/bg_pill_version"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="💡 Mi Fitness > Thiết bị > Thông báo ứng dụng > BẬT cho phép ứng dụng này để nhận tín hiệu trên Redmi Watch 5 Lite."
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp" />
+                </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Card 4: Trợ lý AI Gemini -->
+        <!-- ================= SMARTWATCH LIVE PREVIEW MOCKUP ================= -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp">
+            app:cardBackgroundColor="@color/surface_card"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/stroke_card"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -214,103 +256,539 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="3. Trợ lý AI Gemini (Thay thế Alexa)"
-                    android:textColor="@color/gemini_purple"
-                    android:textSize="16sp"
+                    android:text="Mô phỏng Màn hình Redmi Watch 5"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
                     android:textStyle="bold" />
 
-                <!-- API Key -->
-                <com.google.android.material.textfield.TextInputLayout
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Hình ảnh thực tế hiển thị trên màn hình AMOLED 1.96 inch"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <!-- Watch Bezel Container -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:hint="Gemini API Key"
-                    app:boxBackgroundMode="outline">
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_watch_mockup"
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etApiKey"
+                    <!-- Top status bar inside watch -->
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="textPassword" />
-                </com.google.android.material.textfield.TextInputLayout>
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
-                <!-- Prompt Input -->
-                <com.google.android.material.textfield.TextInputLayout
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="12:45"
+                            android:textColor="#94A3B8"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="1dp"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="● 95%"
+                            android:textColor="#34D399"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                    <!-- Watch Notification Display Area -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:background="#0F172A"
+                        android:orientation="horizontal"
+                        android:padding="12dp">
+
+                        <!-- Big Navigation Turn Arrow -->
+                        <TextView
+                            android:id="@+id/tvMockArrow"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="↰"
+                            android:textColor="@color/watch_accent_cyan"
+                            android:textSize="38sp"
+                            android:textStyle="bold" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvMockRoad"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Đ. Man Thiện"
+                                android:textColor="@color/white"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvMockDistance"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="11 m • 1 phút • Google Maps"
+                                android:textColor="#94A3B8"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ================= CARD 2: GOOGLE MAPS BRIDGE ================= -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardBackgroundColor="@color/surface_card"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/stroke_card"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:hint="Nhập câu hỏi cho Gemini..."
-                    app:boxBackgroundMode="outline">
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etPrompt"
-                        android:layout_width="match_parent"
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:background="@drawable/bg_icon_circle_blue">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_nav_arrow"
+                            app:tint="@color/primary_blue" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="Tóm tắt thời tiết và nhắc nhở tôi uống nước" />
-                </com.google.android.material.textfield.TextInputLayout>
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
 
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Chỉ Đường Google Maps"
+                            android:textColor="@color/text_primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="Mũi tên rẽ, khoảng cách &amp; tên phố"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        android:id="@+id/switchMapsEnabled"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true" />
+                </LinearLayout>
+
+                <!-- Test Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnTestMapsNotify"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="12dp"
+                    android:text="🔔 Thử gửi chỉ đường mẫu (↰ 11 m • Man Thiện)"
+                    android:textAllCaps="false"
+                    android:textSize="13sp"
+                    app:cornerRadius="12dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ================= CARD 3: VOIP CALL BRIDGE (ZALO & MESSENGER) ================= -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardBackgroundColor="@color/surface_card"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/stroke_card"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:background="@drawable/bg_icon_circle_green">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_phone_call"
+                            app:tint="@color/success_green" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Cuộc Gọi Zalo &amp; Messenger"
+                            android:textColor="@color/text_primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="Hiện tên người gọi &amp; rung chuông liên tục"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Supported Apps Pills -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:orientation="horizontal">
 
-                    <Button
-                        android:id="@+id/btnVoiceInput"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="0dp"
+                    <TextView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="6dp"
-                        android:text="🎤 Nói lệnh"
-                        android:textAllCaps="false" />
+                        android:background="@drawable/bg_badge_success"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="3dp"
+                        android:text="✓ Zalo Call"
+                        android:textColor="@color/success_green"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
 
-                    <Button
-                        android:id="@+id/btnAskGemini"
-                        android:layout_width="0dp"
+                    <TextView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1.4"
-                        android:layout_marginStart="6dp"
-                        android:backgroundTint="@color/gemini_purple"
-                        android:text="Gửi lên Đồng hồ"
-                        android:textAllCaps="false" />
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_badge_success"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="3dp"
+                        android:text="✓ Facebook Messenger"
+                        android:textColor="@color/success_green"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/tvGeminiStatus"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="Sẵn sàng"
-                    android:textColor="#666666"
-                    android:textSize="13sp" />
+                <!-- Test Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnTestCallNotify"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="12dp"
+                    android:text="📞 Gửi thử cuộc gọi Zalo (Nguyễn Văn A)"
+                    android:textAllCaps="false"
+                    android:textSize="13sp"
+                    app:cornerRadius="12dp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Copyright & Developer Credit Footer -->
+        <!-- ================= CARD 4: GEMINI AI ASSISTANT ================= -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardBackgroundColor="@color/surface_card"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/stroke_card"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:background="@drawable/bg_icon_circle_purple">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_sparkle_ai"
+                            app:tint="@color/gemini_purple" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Trợ Lý Thông Minh Gemini AI"
+                            android:textColor="@color/text_primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="Thay thế Alexa bằng giọng nói tiếng Việt"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- API Key Input -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:hint="Gemini API Key"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxStrokeColor="@color/gemini_purple"
+                    app:endIconMode="password_toggle"
+                    app:hintTextColor="@color/gemini_purple">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etApiKey"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPassword"
+                        android:textSize="13sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Quick Prompt Suggestion Chips -->
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/chipWeather"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_chip_suggestion"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="5dp"
+                            android:text="🌦️ Thời tiết hôm nay"
+                            android:textColor="@color/gemini_purple"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/chipWater"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:background="@drawable/bg_chip_suggestion"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="5dp"
+                            android:text="💧 Nhắc uống nước"
+                            android:textColor="@color/gemini_purple"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/chipRoute"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:background="@drawable/bg_chip_suggestion"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="5dp"
+                            android:text="💡 Mẹo làm việc hiệu quả"
+                            android:textColor="@color/gemini_purple"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </HorizontalScrollView>
+
+                <!-- Prompt Input -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:hint="Nhập hoặc nói câu hỏi..."
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxStrokeColor="@color/gemini_purple"
+                    app:hintTextColor="@color/gemini_purple">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etPrompt"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Tóm tắt thời tiết và nhắc nhở tôi uống nước"
+                        android:textSize="14sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Actions Row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal">
+
+                    <!-- Voice Input Button -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnVoiceInput"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_marginEnd="6dp"
+                        android:layout_weight="1"
+                        android:text="🎤 Nói lệnh"
+                        android:textAllCaps="false"
+                        android:textSize="14sp"
+                        app:cornerRadius="12dp" />
+
+                    <!-- Ask Gemini & Notify Watch Button -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAskGemini"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_marginStart="6dp"
+                        android:layout_weight="1.4"
+                        android:backgroundTint="@color/gemini_purple"
+                        android:text="Gửi lên Đồng hồ"
+                        android:textAllCaps="false"
+                        android:textColor="@color/white"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        app:cornerRadius="12dp" />
+                </LinearLayout>
+
+                <!-- Status / Response Preview Box -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_pill_version"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Trạng thái phản hồi:"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvGeminiStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Sẵn sàng"
+                        android:textColor="@color/text_primary"
+                        android:textSize="13sp" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ================= BRANDING & COPYRIGHT FOOTER ================= -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="24dp"
+            android:layout_marginTop="28dp"
             android:gravity="center"
             android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Developed by Son Designer"
-                android:textColor="#222222"
-                android:textSize="14sp"
+                android:text="Designed &amp; Developed by Son Designer"
+                android:textColor="@color/text_primary"
+                android:textSize="13sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="3dp"
                 android:text="Copyright © 2026 Son Designer. All Rights Reserved."
-                android:textColor="#777777"
-                android:textSize="12sp" />
+                android:textColor="@color/text_muted"
+                android:textSize="11sp" />
         </LinearLayout>
 
     </LinearLayout>
