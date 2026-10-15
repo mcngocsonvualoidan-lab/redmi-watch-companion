@@ -20,6 +20,7 @@ import androidx.lifecycle.lifecycleScope
 import com.antigravity.redmicompanion.databinding.ActivityMainBinding
 import com.antigravity.redmicompanion.service.GeminiService
 import com.antigravity.redmicompanion.util.NotificationHelper
+import com.antigravity.redmicompanion.util.UpdateManager
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -54,6 +55,9 @@ class MainActivity : AppCompatActivity() {
         loadSavedApiKey()
         requestAppPermissions()
 
+        binding.tvCurrentVersion.text = "Phiên bản ${UpdateManager.CURRENT_VERSION}"
+        checkAppUpdate(silent = true)
+
         setupListeners()
 
         // Xử lý nếu được gọi từ thanh Quick Settings Tile
@@ -68,6 +72,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
+        // Nút kiểm tra cập nhật thủ công
+        binding.btnCheckUpdate.setOnClickListener {
+            checkAppUpdate(silent = false)
+        }
+
         // Nút mở cài đặt cấp quyền Notification Listener
         binding.btnGrantPermission.setOnClickListener {
             val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
@@ -204,6 +213,26 @@ class MainActivity : AppCompatActivity() {
 
         if (permissions.isNotEmpty()) {
             ActivityCompat.requestPermissions(this, permissions.toTypedArray(), 101)
+        }
+    }
+
+    private fun checkAppUpdate(silent: Boolean) {
+        if (!silent) {
+            Toast.makeText(this, "Đang kiểm tra bản cập nhật...", Toast.LENGTH_SHORT).show()
+        }
+        lifecycleScope.launch {
+            val result = UpdateManager.checkUpdate()
+            result.onSuccess { releaseInfo ->
+                if (releaseInfo != null) {
+                    UpdateManager.promptUpdate(this@MainActivity, releaseInfo)
+                } else if (!silent) {
+                    Toast.makeText(this@MainActivity, "Bạn đang dùng phiên bản mới nhất (${UpdateManager.CURRENT_VERSION})", Toast.LENGTH_SHORT).show()
+                }
+            }.onFailure { error ->
+                if (!silent) {
+                    Toast.makeText(this@MainActivity, "Không thể kiểm tra cập nhật: ${error.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 }
