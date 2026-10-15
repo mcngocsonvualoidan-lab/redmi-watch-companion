@@ -11,6 +11,12 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <!-- Quyền tự động cập nhật cài đặt bản APK mới -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- Quyền khôi phục lịch báo thời tiết khi khởi động lại máy -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Quyền đặt lịch thông báo thời tiết chính xác -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:allowBackup="true"
@@ -51,6 +57,21 @@
                 <action android:name="android.service.quicksettings.action.QS_TILE" />
             </intent-filter>
         </service>
+
+        <!-- Receiver nhận báo thức hàng ngày để gửi thông báo thời tiết -->
+        <receiver
+            android:name=".service.WeatherAlarmReceiver"
+            android:exported="false" />
+
+        <!-- Receiver khôi phục lịch báo thời tiết khi máy khởi động lại -->
+        <receiver
+            android:name=".service.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
 
         <!-- FileProvider để mở và cài đặt file APK cập nhật -->
         <provider

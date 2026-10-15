@@ -20,10 +20,12 @@ object NotificationHelper {
     private const val MAPS_CHANNEL_ID = "redmi_maps_nav_channel"
     private const val GEMINI_CHANNEL_ID = "redmi_gemini_channel"
     private const val CALL_CHANNEL_ID = "redmi_voip_call_channel_v3"
+    private const val WEATHER_CHANNEL_ID = "redmi_weather_channel"
 
     private const val MAPS_NOTIF_ID = 1001
     private const val GEMINI_NOTIF_ID = 2002
     private const val VOIP_CALL_NOTIF_ID = 3003
+    private const val WEATHER_NOTIF_ID = 4004
 
     fun createNotificationChannels(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -68,9 +70,23 @@ object NotificationHelper {
                 enableLights(true)
             }
 
+            // 4. Kênh thông báo Thời tiết hàng ngày
+            val weatherChannel = NotificationChannel(
+                WEATHER_CHANNEL_ID,
+                "Bản Tin Thời Tiết Hàng Ngày",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Tự động gửi thông tin thời tiết mỗi sáng tới Redmi Watch 5"
+                enableVibration(true)
+                vibrationPattern = longArrayOf(0, 300, 150, 300)
+                lightColor = Color.YELLOW
+                enableLights(true)
+            }
+
             manager.createNotificationChannel(mapsChannel)
             manager.createNotificationChannel(geminiChannel)
             manager.createNotificationChannel(callChannel)
+            manager.createNotificationChannel(weatherChannel)
         }
     }
 
@@ -201,5 +217,27 @@ object NotificationHelper {
             .setAutoCancel(true)
 
         manager.notify(GEMINI_NOTIF_ID, builder.build())
+    }
+
+    /**
+     * Gửi bản tin Thời tiết hàng ngày tới đồng hồ
+     */
+    fun sendWeatherNotification(context: Context, title: String, summary: String) {
+        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val logoBitmap = BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher)
+
+        val builder = NotificationCompat.Builder(context, WEATHER_CHANNEL_ID)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setLargeIcon(logoBitmap)
+            .setContentTitle(title)
+            .setContentText(summary)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(summary))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_STATUS)
+            .setVibrate(longArrayOf(0, 300, 150, 300))
+            .setOngoing(false)
+            .setAutoCancel(true)
+
+        manager.notify(WEATHER_NOTIF_ID, builder.build())
     }
 }

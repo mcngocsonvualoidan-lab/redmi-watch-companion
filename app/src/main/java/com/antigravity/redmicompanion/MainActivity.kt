@@ -2,6 +2,7 @@ package com.antigravity.redmicompanion
 
 import android.Manifest
 import android.app.Activity
+import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -24,6 +25,7 @@ import com.antigravity.redmicompanion.databinding.ActivityMainBinding
 import com.antigravity.redmicompanion.service.GeminiService
 import com.antigravity.redmicompanion.util.NotificationHelper
 import com.antigravity.redmicompanion.util.UpdateManager
+import com.antigravity.redmicompanion.util.WeatherScheduler
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -68,6 +70,7 @@ class MainActivity : AppCompatActivity() {
 
         setupListeners()
         setupSuggestionChips()
+        setupWeatherControls()
 
         // Tự động lưu API Key vào thiết bị khi người dùng nhập hoặc thay đổi
         binding.etApiKey.doAfterTextChanged {
@@ -83,6 +86,98 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         updatePermissionStatus()
+    }
+
+    private fun setupWeatherControls() {
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+        val isEnabled = prefs.getBoolean(WeatherScheduler.KEY_WEATHER_ENABLED, true)
+        val hour = prefs.getInt(WeatherScheduler.KEY_WEATHER_HOUR, WeatherScheduler.DEFAULT_HOUR)
+        val minute = prefs.getInt(WeatherScheduler.KEY_WEATHER_MINUTE, WeatherScheduler.DEFAULT_MINUTE)
+        val location = prefs.getString(WeatherScheduler.KEY_WEATHER_LOCATION, WeatherScheduler.DEFAULT_LOCATION)
+            ?: WeatherScheduler.DEFAULT_LOCATION
+
+        binding.switchWeatherEnabled.isChecked = isEnabled
+        binding.tvWeatherTime.text = formatTimeString(hour, minute)
+        binding.etWeatherLocation.setText(location)
+
+        // Khởi động lịch báo hàng ngày
+        if (isEnabled) {
+            WeatherScheduler.scheduleDailyWeather(this)
+        }
+
+        // Bật / tắt thời tiết
+        binding.switchWeatherEnabled.setOnCheckedChangeListener { _, isChecked ->
+            prefs.edit().putBoolean(WeatherScheduler.KEY_WEATHER_ENABLED, isChecked).apply()
+            if (isChecked) {
+                WeatherScheduler.scheduleDailyWeather(this)
+                Toast.makeText(this, "Đã bật tự động báo thời tiết hàng ngày lúc ${binding.tvWeatherTime.text}", Toast.LENGTH_SHORT).show()
+            } else {
+                WeatherScheduler.cancelDailyWeather(this)
+                Toast.makeText(this, "Đã tắt thông báo thời tiết hàng ngày", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        // Chọn giờ quy chuẩn (Mở TimePickerDialog)
+        binding.btnPickWeatherTime.setOnClickListener {
+            val currentH = prefs.getInt(WeatherScheduler.KEY_WEATHER_HOUR, WeatherScheduler.DEFAULT_HOUR)
+            val currentM = prefs.getInt(WeatherScheduler.KEY_WEATHER_MINUTE, WeatherScheduler.DEFAULT_MINUTE)
+
+            TimePickerDialog(this, { _, selectedH, selectedM ->
+                prefs.edit()
+                    .putInt(WeatherScheduler.KEY_WEATHER_HOUR, selectedH)
+                    .putInt(WeatherScheduler.KEY_WEATHER_MINUTE, selectedM)
+                    .apply()
+
+                binding.tvWeatherTime.text = formatTimeString(selectedH, selectedM)
+                if (binding.switchWeatherEnabled.isChecked) {
+                    WeatherScheduler.scheduleDailyWeather(this)
+                }
+                Toast.makeText(this, "Đã đặt giờ báo thời tiết: ${formatTimeString(selectedH, selectedM)}", Toast.LENGTH_SHORT).show()
+            }, currentH, currentM, true).show()
+        }
+
+        // Lưu địa điểm khi người dùng gõ
+        binding.etWeatherLocation.doAfterTextChanged { text ->
+            val loc = text?.toString()?.trim() ?: WeatherScheduler.DEFAULT_LOCATION
+            prefs.edit().putString(WeatherScheduler.KEY_WEATHER_LOCATION, loc).apply()
+        }
+
+        // Nút test gửi thử dự báo thời tiết hôm nay
+        binding.btnTestWeather.setOnClickListener {
+            val loc = binding.etWeatherLocation.text?.toString()?.trim() ?: WeatherScheduler.DEFAULT_LOCATION
+            val inputKey = binding.etApiKey.text?.toString()?.trim() ?: ""
+            val apiKey = if (inputKey.isNotBlank()) inputKey else DEFAULT_API_KEY
+
+            Toast.makeText(this, "Đang tạo bản tin thời tiết $loc...", Toast.LENGTH_SHORT).show()
+
+            lifecycleScope.launch {
+                val prompt = "Tóm tắt dự báo thời tiết hôm nay tại $loc thật ngắn gọn cho màn hình đồng hồ đeo tay: Nhiệt độ thấp nhất - cao nhất, nắng hay mưa, lời khuyên cần mang áo mưa hay chống nắng (dưới 28 từ, bắt đầu bằng icon thời tiết)."
+                val result = geminiService.askGemini(apiKey, prompt)
+
+                val summary = result.getOrElse {
+                    "Thời tiết $loc hôm nay: 28°C - 34°C, ngày nắng ráo, chiều tối có mưa rào thoáng qua. Nhớ mang theo áo mưa!"
+                }
+
+                // Cập nhật mockup đồng hồ trực quan
+                binding.tvMockArrow.text = "🌤️"
+                binding.tvMockRoad.text = "Thời Tiết $loc"
+                binding.tvMockDistance.text = if (summary.length > 36) summary.take(36) + "..." else summary
+
+                // Gửi thông báo sang Redmi Watch 5
+                NotificationHelper.sendWeatherNotification(
+                    context = this@MainActivity,
+                    title = "🌤️ Thời Tiết Hôm Nay ($loc)",
+                    summary = summary
+                )
+                Toast.makeText(this@MainActivity, "Đã gửi bản tin thời tiết lên Redmi Watch!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun formatTimeString(hour: Int, minute: Int): String {
+        val period = if (hour < 12) "Sáng" else "Chiều/Tối"
+        return String.format(Locale.getDefault(), "%02d:%02d %s", hour, minute, period)
     }
 
     private fun setupSuggestionChips() {
