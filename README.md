@@ -1,8 +1,16 @@
 # Redmi Watch 5 Companion (Google Maps Bridge & Gemini AI)
 
+<p align="center">
+  <img src="app_logo.jpg" width="220" alt="Redmi Watch Companion Logo by Son Designer" style="border-radius: 24px;" />
+  <br>
+  <b>Developed by Son Designer</b><br>
+  <i>Copyright &copy; 2026 Son Designer. All Rights Reserved.</i>
+</p>
+
 Ứng dụng Android Companion đóng vai trò cầu nối thông minh dành cho **Redmi Watch 5 Lite** (và các dòng Redmi Watch / Xiaomi Band chạy HyperOS RTOS):
-1. **Google Maps Navigation Bridge:** Tự động bắt thông báo điều hướng từ Google Maps khi bạn di chuyển, chuyển đổi thành thông báo chỉ đường trực quan (kèm biểu tượng rẽ ➡️ ⬅️ ↗️ ↖️, khoảng cách, tên đường) và gửi sang đồng hồ với chế độ rung ưu tiên.
-2. **Trợ lý AI Gemini:** Kết nối Google Gemini API (`gemini-2.5-flash`), nhận lệnh qua giọng nói tiếng Việt hoặc văn bản, tối ưu câu trả lời ngắn gọn (dưới 35 từ) và đẩy thẳng lên màn hình đồng hồ Redmi Watch.
+1. **Google Maps Navigation Bridge:** Tự động bắt thông báo điều hướng từ Google Maps khi bạn di chuyển, chuyển đổi thành thông báo chỉ đường trực quan (kèm biểu tượng rẽ ↰, ↱, ↗️, ↖️, khoảng cách, tên đường) và gửi sang đồng hồ với chế độ rung ưu tiên.
+2. **Cuộc gọi Zalo & Messenger:** Tự động nhận diện cuộc gọi đến từ Zalo/Messenger và đẩy tên người gọi kèm rung chuông lên đồng hồ.
+3. **Trợ lý AI Gemini:** Kết nối Google Gemini API (`gemini-2.5-flash`), nhận lệnh qua giọng nói tiếng Việt hoặc văn bản, tối ưu câu trả lời ngắn gọn (dưới 35 từ) và đẩy thẳng lên màn hình đồng hồ Redmi Watch.
 
 ---
 

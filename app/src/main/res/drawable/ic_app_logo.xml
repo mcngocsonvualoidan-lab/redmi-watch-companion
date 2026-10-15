@@ -1,0 +1,50 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Background rounded squircle with modern gradient -->
+    <path android:pathData="M18,0 L90,0 A18,18 0 0,1 108,18 L108,90 A18,18 0 0,1 90,108 L18,108 A18,18 0 0,1 0,90 L0,18 A18,18 0 0,1 18,0 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:angle="135"
+                android:endColor="#1E1B4B"
+                android:startColor="#0F172A"
+                android:type="linear" />
+        </aapt:attr>
+    </path>
+
+    <!-- Watch Outer Case -->
+    <path
+        android:strokeColor="#38BDF8"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M32,24 L76,24 A12,12 0 0,1 88,36 L88,72 A12,12 0 0,1 76,84 L32,84 A12,12 0 0,1 20,72 L20,36 A12,12 0 0,1 32,24 Z" />
+
+    <!-- Watch Straps (top and bottom hints) -->
+    <path
+        android:fillColor="#1E293B"
+        android:pathData="M38,14 L70,14 L68,24 L40,24 Z" />
+    <path
+        android:fillColor="#1E293B"
+        android:pathData="M40,84 L68,84 L70,94 L38,94 Z" />
+
+    <!-- Google Maps Navigation Arrow in Cyan / Electric Blue -->
+    <path
+        android:fillColor="#38BDF8"
+        android:pathData="M44,40 L60,54 L44,68 L48,54 Z" />
+
+    <!-- Gemini AI Sparkle 4-point Star in Purple/Pink Gradient -->
+    <path
+        android:fillColor="#C084FC"
+        android:pathData="M66,34 C66,38 70,42 74,42 C70,42 66,46 66,50 C66,46 62,42 58,42 C62,42 66,38 66,34 Z" />
+
+    <!-- Pulse Dot -->
+    <path
+        android:fillColor="#34D399"
+        android:pathData="M32,70 A3,3 0 1,1 32,70.01 Z" />
+
+</vector>
