@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Quyền mạng để gọi Gemini API -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Quyền gửi thông báo (Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Quyền thu âm giọng nói để hỏi Gemini -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Quyền rung máy để đồng hồ rung mạnh khi có chỉ đường/câu trả lời -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.RedmiCompanion">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Service lắng nghe thông báo Google Maps -->
+        <service
+            android:name=".service.MapsNotificationListenerService"
+            android:exported="true"
+            android:label="Redmi Maps Listener"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
+        <!-- Quick Settings Tile để kích hoạt hỏi nhanh Gemini từ thanh trạng thái -->
+        <service
+            android:name=".service.GeminiTileService"
+            android:exported="true"
+            android:icon="@android:drawable/ic_btn_speak_now"
+            android:label="Hỏi Gemini"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+    </application>
+
+</manifest>
