@@ -30,7 +30,7 @@ class WeatherAlarmReceiver : BroadcastReceiver() {
         val location = prefs.getString(WeatherScheduler.KEY_WEATHER_LOCATION, WeatherScheduler.DEFAULT_LOCATION)
             ?: WeatherScheduler.DEFAULT_LOCATION
         val savedKey = prefs.getString("gemini_api_key", null)
-        val apiKey = if (!savedKey.isNullOrBlank()) savedKey else MainActivity.DEFAULT_API_KEY
+        val apiKey = if (!savedKey.isNullOrBlank() && savedKey != "AIzaSyCAz4kmmUrYKqRCtzynOTICNPkutUkxSHE") savedKey else ""
 
         CoroutineScope(Dispatchers.IO).launch {
             try {

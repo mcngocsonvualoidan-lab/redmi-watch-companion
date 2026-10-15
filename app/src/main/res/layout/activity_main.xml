@@ -622,66 +622,85 @@
                         android:checked="true" />
                 </LinearLayout>
 
-                <!-- Configuration Row (Time & Location) -->
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <!-- Section Title: Khung giờ báo thời tiết -->
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:text="Các khung giờ báo trong ngày:"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
 
-                    <!-- Time Picker Chip -->
+                <!-- Dynamic Multi-Time Slots List & Add Button -->
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:scrollbars="none">
+
                     <LinearLayout
-                        android:id="@+id/btnPickWeatherTime"
+                        android:id="@+id/llWeatherTimeSlots"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/bg_pill_update"
-                        android:clickable="true"
-                        android:focusable="true"
                         android:gravity="center_vertical"
-                        android:paddingHorizontal="10dp"
-                        android:paddingVertical="7dp">
+                        android:orientation="horizontal">
 
-                        <TextView
+                        <!-- Time slots added dynamically via Kotlin -->
+
+                        <!-- Add Time Slot Button -->
+                        <LinearLayout
+                            android:id="@+id/btnAddWeatherTime"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="⏰ Giờ báo:"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="12sp" />
+                            android:background="@drawable/bg_pill_update"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center_vertical"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="6dp">
 
-                        <TextView
-                            android:id="@+id/tvWeatherTime"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="4dp"
-                            android:text="07:00 Sáng"
-                            android:textColor="@color/primary_blue"
-                            android:textSize="12sp"
-                            android:textStyle="bold" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="➕ Thêm giờ báo"
+                                android:textColor="@color/primary_blue"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
                     </LinearLayout>
+                </HorizontalScrollView>
 
-                    <!-- Location Input -->
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="0dp"
+                <!-- Next Scheduled Time Status -->
+                <TextView
+                    android:id="@+id/tvNextWeatherSchedule"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="⏳ Lần báo tiếp theo: Đang tính..."
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <!-- Location Input -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:hint="Khu vực dự báo"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusTopStart="12dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etWeatherLocation"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:layout_weight="1"
-                        android:hint="Khu vực"
-                        app:boxCornerRadiusBottomEnd="12dp"
-                        app:boxCornerRadiusBottomStart="12dp"
-                        app:boxCornerRadiusTopEnd="12dp"
-                        app:boxCornerRadiusTopStart="12dp">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etWeatherLocation"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:imeOptions="actionDone"
-                            android:singleLine="true"
-                            android:text="TP. Hồ Chí Minh"
-                            android:textSize="12sp" />
-                    </com.google.android.material.textfield.TextInputLayout>
-                </LinearLayout>
+                        android:imeOptions="actionDone"
+                        android:singleLine="true"
+                        android:text="TP. Hồ Chí Minh"
+                        android:textSize="13sp" />
+                </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- Test Weather Button -->
                 <com.google.android.material.button.MaterialButton
@@ -779,6 +798,49 @@
                         android:inputType="textPassword"
                         android:textSize="13sp" />
                 </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- API Key Actions (Get Key & Verify) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/btnGetFreeApiKey"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:padding="4dp"
+                        android:text="🔑 Lấy API Key miễn phí (Google AI)"
+                        android:textColor="@color/primary_blue"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/btnTestApiKey"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_pill_version"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp"
+                        android:text="⚡ Kiểm tra Key"
+                        android:textColor="@color/gemini_purple"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvApiKeyStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="ℹ️ Key được lưu bảo mật riêng trên máy bạn (tự động lưu khi dán)."
+                    android:textColor="@color/text_muted"
+                    android:textSize="11sp" />
 
                 <!-- Quick Prompt Suggestion Chips -->
                 <HorizontalScrollView

@@ -32,8 +32,8 @@ import java.util.Locale
 class MainActivity : AppCompatActivity() {
 
     companion object {
-        // API Key mặc định của người dùng
-        const val DEFAULT_API_KEY = "AIzaSyCAz4kmmUrYKqRCtzynOTICNPkutUkxSHE"
+        // Không lưu API Key nhạy cảm trong mã nguồn
+        const val DEFAULT_API_KEY = ""
     }
 
     private lateinit var binding: ActivityMainBinding
@@ -92,14 +92,15 @@ class MainActivity : AppCompatActivity() {
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
         val isEnabled = prefs.getBoolean(WeatherScheduler.KEY_WEATHER_ENABLED, true)
-        val hour = prefs.getInt(WeatherScheduler.KEY_WEATHER_HOUR, WeatherScheduler.DEFAULT_HOUR)
-        val minute = prefs.getInt(WeatherScheduler.KEY_WEATHER_MINUTE, WeatherScheduler.DEFAULT_MINUTE)
         val location = prefs.getString(WeatherScheduler.KEY_WEATHER_LOCATION, WeatherScheduler.DEFAULT_LOCATION)
             ?: WeatherScheduler.DEFAULT_LOCATION
 
         binding.switchWeatherEnabled.isChecked = isEnabled
-        binding.tvWeatherTime.text = formatTimeString(hour, minute)
         binding.etWeatherLocation.setText(location)
+
+        // Hiển thị danh sách các khung giờ báo và lịch báo tiếp theo
+        renderWeatherTimeChips()
+        updateNextWeatherSchedule()
 
         // Khởi động lịch báo hàng ngày
         if (isEnabled) {
@@ -111,29 +112,30 @@ class MainActivity : AppCompatActivity() {
             prefs.edit().putBoolean(WeatherScheduler.KEY_WEATHER_ENABLED, isChecked).apply()
             if (isChecked) {
                 WeatherScheduler.scheduleDailyWeather(this)
-                Toast.makeText(this, "Đã bật tự động báo thời tiết hàng ngày lúc ${binding.tvWeatherTime.text}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Đã bật tự động báo thời tiết hàng ngày", Toast.LENGTH_SHORT).show()
             } else {
                 WeatherScheduler.cancelDailyWeather(this)
                 Toast.makeText(this, "Đã tắt thông báo thời tiết hàng ngày", Toast.LENGTH_SHORT).show()
             }
+            updateNextWeatherSchedule()
         }
 
-        // Chọn giờ quy chuẩn (Mở TimePickerDialog)
-        binding.btnPickWeatherTime.setOnClickListener {
-            val currentH = prefs.getInt(WeatherScheduler.KEY_WEATHER_HOUR, WeatherScheduler.DEFAULT_HOUR)
-            val currentM = prefs.getInt(WeatherScheduler.KEY_WEATHER_MINUTE, WeatherScheduler.DEFAULT_MINUTE)
+        // Thêm khung giờ báo mới (Mở TimePickerDialog)
+        binding.btnAddWeatherTime.setOnClickListener {
+            val calendar = java.util.Calendar.getInstance()
+            val currentH = calendar.get(java.util.Calendar.HOUR_OF_DAY)
+            val currentM = calendar.get(java.util.Calendar.MINUTE)
 
             TimePickerDialog(this, { _, selectedH, selectedM ->
-                prefs.edit()
-                    .putInt(WeatherScheduler.KEY_WEATHER_HOUR, selectedH)
-                    .putInt(WeatherScheduler.KEY_WEATHER_MINUTE, selectedM)
-                    .apply()
-
-                binding.tvWeatherTime.text = formatTimeString(selectedH, selectedM)
-                if (binding.switchWeatherEnabled.isChecked) {
-                    WeatherScheduler.scheduleDailyWeather(this)
+                val formatted = String.format(java.util.Locale.getDefault(), "%02d:%02d", selectedH, selectedM)
+                val added = WeatherScheduler.addTimeSlot(this, formatted)
+                if (added) {
+                    renderWeatherTimeChips()
+                    updateNextWeatherSchedule()
+                    Toast.makeText(this, "Đã thêm khung giờ báo: $formatted", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "Khung giờ $formatted đã có trong danh sách!", Toast.LENGTH_SHORT).show()
                 }
-                Toast.makeText(this, "Đã đặt giờ báo thời tiết: ${formatTimeString(selectedH, selectedM)}", Toast.LENGTH_SHORT).show()
             }, currentH, currentM, true).show()
         }
 
@@ -147,13 +149,12 @@ class MainActivity : AppCompatActivity() {
         binding.btnTestWeather.setOnClickListener {
             val loc = binding.etWeatherLocation.text?.toString()?.trim() ?: WeatherScheduler.DEFAULT_LOCATION
             val inputKey = binding.etApiKey.text?.toString()?.trim() ?: ""
-            val apiKey = if (inputKey.isNotBlank()) inputKey else DEFAULT_API_KEY
 
             Toast.makeText(this, "Đang tạo bản tin thời tiết $loc...", Toast.LENGTH_SHORT).show()
 
             lifecycleScope.launch {
                 val prompt = "Tóm tắt dự báo thời tiết hôm nay tại $loc thật ngắn gọn cho màn hình đồng hồ đeo tay: Nhiệt độ thấp nhất - cao nhất, nắng hay mưa, lời khuyên cần mang áo mưa hay chống nắng (dưới 28 từ, bắt đầu bằng icon thời tiết)."
-                val result = geminiService.askGemini(apiKey, prompt)
+                val result = geminiService.askGemini(inputKey, prompt)
 
                 val summary = result.getOrElse {
                     "Thời tiết $loc hôm nay: 28°C - 34°C, ngày nắng ráo, chiều tối có mưa rào thoáng qua. Nhớ mang theo áo mưa!"
@@ -175,9 +176,40 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun formatTimeString(hour: Int, minute: Int): String {
-        val period = if (hour < 12) "Sáng" else "Chiều/Tối"
-        return String.format(Locale.getDefault(), "%02d:%02d %s", hour, minute, period)
+    private fun renderWeatherTimeChips() {
+        val container = binding.llWeatherTimeSlots
+        // Xóa các chip cũ (giữ lại nút btnAddWeatherTime ở cuối)
+        val childCount = container.childCount
+        if (childCount > 1) {
+            container.removeViews(0, childCount - 1)
+        }
+
+        val slots = WeatherScheduler.getTimeSlots(this)
+        val inflater = layoutInflater
+
+        slots.forEachIndexed { index, slotTime ->
+            val chipView = inflater.inflate(R.layout.item_weather_time_chip, container, false)
+            val tvChip = chipView.findViewById<android.widget.TextView>(R.id.tvChipTime)
+            val btnRemove = chipView.findViewById<android.widget.ImageView>(R.id.btnRemoveChip)
+
+            tvChip.text = "⏰ $slotTime"
+            btnRemove.setOnClickListener {
+                if (slots.size <= 1) {
+                    Toast.makeText(this, "Cần giữ lại ít nhất 1 khung giờ báo!", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                WeatherScheduler.removeTimeSlot(this, slotTime)
+                renderWeatherTimeChips()
+                updateNextWeatherSchedule()
+                Toast.makeText(this, "Đã xóa khung giờ $slotTime", Toast.LENGTH_SHORT).show()
+            }
+
+            container.addView(chipView, index)
+        }
+    }
+
+    private fun updateNextWeatherSchedule() {
+        binding.tvNextWeatherSchedule.text = WeatherScheduler.getNextScheduledSummary(this)
     }
 
     private fun setupSuggestionChips() {
@@ -269,6 +301,39 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Mở Google AI Studio để lấy API Key miễn phí
+        binding.btnGetFreeApiKey.setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://aistudio.google.com/app/apikey"))
+            startActivity(intent)
+        }
+
+        // Kiểm tra nhanh tính hợp lệ của API Key
+        binding.btnTestApiKey.setOnClickListener {
+            val key = binding.etApiKey.text?.toString()?.trim() ?: ""
+            if (key.isBlank()) {
+                binding.tvApiKeyStatus.text = "⚠️ Vui lòng nhập API Key vào ô trên trước khi kiểm tra!"
+                binding.tvApiKeyStatus.setTextColor(Color.parseColor("#DC2626"))
+                return@setOnClickListener
+            }
+
+            binding.tvApiKeyStatus.text = "⏳ Đang kiểm tra API Key với máy chủ Google AI..."
+            binding.tvApiKeyStatus.setTextColor(Color.parseColor("#7E57C2"))
+            binding.btnTestApiKey.isEnabled = false
+
+            lifecycleScope.launch {
+                val res = geminiService.verifyApiKey(key)
+                binding.btnTestApiKey.isEnabled = true
+                res.onSuccess { msg ->
+                    binding.tvApiKeyStatus.text = msg
+                    binding.tvApiKeyStatus.setTextColor(Color.parseColor("#059669"))
+                    saveApiKey()
+                }.onFailure { err ->
+                    binding.tvApiKeyStatus.text = "❌ ${err.message}"
+                    binding.tvApiKeyStatus.setTextColor(Color.parseColor("#DC2626"))
+                }
+            }
+        }
+
         // Nút nhận diện giọng nói tiếng Việt
         binding.btnVoiceInput.setOnClickListener {
             startVoiceInput()
@@ -301,13 +366,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun askGeminiAndNotifyWatch(prompt: String) {
         val inputKey = binding.etApiKey.text?.toString()?.trim() ?: ""
-        val apiKey = if (inputKey.isNotBlank()) inputKey else DEFAULT_API_KEY
+        if (inputKey.isBlank()) {
+            binding.tvGeminiStatus.text = "❌ Chưa có API Key. Bấm '🔑 Lấy API Key miễn phí' để tạo key và dán vào ô trên."
+            Toast.makeText(this, "Vui lòng nhập API Key để dùng trợ lý Gemini!", Toast.LENGTH_LONG).show()
+            return
+        }
 
         binding.tvGeminiStatus.text = "⏳ Đang hỏi Gemini AI..."
         binding.btnAskGemini.isEnabled = false
 
         lifecycleScope.launch {
-            val result = geminiService.askGemini(apiKey, prompt)
+            val result = geminiService.askGemini(inputKey, prompt)
             binding.btnAskGemini.isEnabled = true
 
             result.onSuccess { answer ->
@@ -355,8 +424,12 @@ class MainActivity : AppCompatActivity() {
     private fun loadSavedApiKey() {
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val savedKey = prefs.getString(KEY_API_KEY, null)
-        // Nếu chưa lưu hoặc rỗng, tự động điền API Key mặc định của người dùng
-        val effectiveKey = if (!savedKey.isNullOrBlank()) savedKey else DEFAULT_API_KEY
+        // Nếu là key cũ từng bị leak thì bỏ qua
+        val effectiveKey = if (!savedKey.isNullOrBlank() && savedKey != "AIzaSyCAz4kmmUrYKqRCtzynOTICNPkutUkxSHE") {
+            savedKey
+        } else {
+            ""
+        }
         binding.etApiKey.setText(effectiveKey)
     }
 
