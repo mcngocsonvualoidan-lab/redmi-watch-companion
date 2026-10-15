@@ -115,12 +115,53 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Gửi thử thông báo chỉ đường mẫu lên đồng hồ"
+                    android:text="Gửi thử chỉ đường mẫu (↰ 11 m • Man Thiện)"
                     android:textAllCaps="false" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Card 3: Trợ lý AI Gemini -->
+        <!-- Card 3: Cuộc gọi Zalo & Messenger -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3. Cuộc gọi Zalo &amp; Messenger"
+                    android:textColor="#2E7D32"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Tự động bắt cuộc gọi Zalo / Messenger và đẩy tên người gọi kèm rung chuông lên đồng hồ"
+                    android:textColor="#666666"
+                    android:textSize="13sp" />
+
+                <Button
+                    android:id="@+id/btnTestCallNotify"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Gửi thử thông báo cuộc gọi Zalo có tên lên đồng hồ"
+                    android:textAllCaps="false" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Card 4: Trợ lý AI Gemini -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

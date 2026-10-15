@@ -74,15 +74,28 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // Nút test bắn thông báo chỉ đường Maps mẫu sang đồng hồ
+        // Nút test bắn thông báo chỉ đường Maps mẫu sang đồng hồ (giống hình mẫu)
         binding.btnTestMapsNotify.setOnClickListener {
             NotificationHelper.sendMapsNotification(
                 context = this,
-                arrowEmoji = "➡️",
-                title = "Sau 200m rẽ phải vào đường Nguyễn Huệ",
-                distanceInfo = "200m • 5 phút"
+                arrowEmoji = "↰",
+                title = "Man Thiện",
+                distanceInfo = "11 m",
+                timeRemaining = "1 phút"
             )
-            Toast.makeText(this, "Đã gửi thông báo chỉ đường mẫu!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Đã gửi chỉ đường mẫu (↰ 11 m • Man Thiện)!", Toast.LENGTH_SHORT).show()
+        }
+
+        // Nút test cuộc gọi Zalo có tên người gọi lên đồng hồ
+        binding.btnTestCallNotify.setOnClickListener {
+            NotificationHelper.sendVoipCallNotification(
+                context = this,
+                appName = "Zalo",
+                callerName = "Nguyễn Văn A",
+                callType = "Cuộc gọi thoại đến..."
+            )
+            Toast.makeText(this, "Đã gửi cuộc gọi Zalo mẫu: Nguyễn Văn A", Toast.LENGTH_LONG).show()
+        }
         }
 
         // Nút nhận diện giọng nói tiếng Việt
