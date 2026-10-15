@@ -96,7 +96,6 @@ class MainActivity : AppCompatActivity() {
             )
             Toast.makeText(this, "Đã gửi cuộc gọi Zalo mẫu: Nguyễn Văn A", Toast.LENGTH_LONG).show()
         }
-        }
 
         // Nút nhận diện giọng nói tiếng Việt
         binding.btnVoiceInput.setOnClickListener {
