@@ -6,16 +6,19 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.speech.RecognizerIntent
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
 import com.antigravity.redmicompanion.databinding.ActivityMainBinding
 import com.antigravity.redmicompanion.service.GeminiService
@@ -25,6 +28,11 @@ import kotlinx.coroutines.launch
 import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
+
+    companion object {
+        // API Key mặc định của người dùng
+        const val DEFAULT_API_KEY = "AIzaSyCAz4kmmUrYKqRCtzynOTICNPkutUkxSHE"
+    }
 
     private lateinit var binding: ActivityMainBinding
     private val geminiService = GeminiService()
@@ -60,6 +68,11 @@ class MainActivity : AppCompatActivity() {
 
         setupListeners()
         setupSuggestionChips()
+
+        // Tự động lưu API Key vào thiết bị khi người dùng nhập hoặc thay đổi
+        binding.etApiKey.doAfterTextChanged {
+            saveApiKey()
+        }
 
         // Xử lý nếu được gọi từ thanh Quick Settings Tile
         if (intent.getBooleanExtra("EXTRA_START_VOICE", false)) {
@@ -105,6 +118,19 @@ class MainActivity : AppCompatActivity() {
         binding.btnGrantPermission.setOnClickListener {
             val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
             startActivity(intent)
+        }
+
+        // Nút mở thẳng trang Thông tin ứng dụng (App Info) để mở khóa "Cài đặt hạn chế" trên Pixel
+        binding.btnOpenAppInfo.setOnClickListener {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.fromParts("package", packageName, null)
+            }
+            startActivity(intent)
+            Toast.makeText(
+                this,
+                "Chạm vào dấu 3 chấm (⋮) ở góc trên bên phải > Chọn 'Cho phép cài đặt bị hạn chế'",
+                Toast.LENGTH_LONG
+            ).show()
         }
 
         // Nút test bắn thông báo chỉ đường Maps mẫu sang đồng hồ
@@ -171,11 +197,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun askGeminiAndNotifyWatch(prompt: String) {
-        val apiKey = binding.etApiKey.text?.toString()?.trim() ?: ""
-        if (apiKey.isBlank()) {
-            Toast.makeText(this, "Vui lòng điền Gemini API Key!", Toast.LENGTH_LONG).show()
-            return
-        }
+        val inputKey = binding.etApiKey.text?.toString()?.trim() ?: ""
+        val apiKey = if (inputKey.isNotBlank()) inputKey else DEFAULT_API_KEY
 
         binding.tvGeminiStatus.text = "⏳ Đang hỏi Gemini AI..."
         binding.btnAskGemini.isEnabled = false
@@ -211,11 +234,13 @@ class MainActivity : AppCompatActivity() {
             binding.tvPermissionStatus.setTextColor(Color.parseColor("#059669"))
             binding.btnGrantPermission.isEnabled = false
             binding.btnGrantPermission.text = "✓ Quyền hệ thống đã sẵn sàng"
+            binding.btnOpenAppInfo.visibility = View.GONE
         } else {
             binding.tvPermissionStatus.text = "Chưa cấp quyền lắng nghe thông báo"
             binding.tvPermissionStatus.setTextColor(Color.parseColor("#DC2626"))
             binding.btnGrantPermission.isEnabled = true
             binding.btnGrantPermission.text = "Mở cài đặt cấp quyền thông báo"
+            binding.btnOpenAppInfo.visibility = View.VISIBLE
         }
     }
 
@@ -226,8 +251,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadSavedApiKey() {
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val savedKey = prefs.getString(KEY_API_KEY, "")
-        binding.etApiKey.setText(savedKey)
+        val savedKey = prefs.getString(KEY_API_KEY, null)
+        // Nếu chưa lưu hoặc rỗng, tự động điền API Key mặc định của người dùng
+        val effectiveKey = if (!savedKey.isNullOrBlank()) savedKey else DEFAULT_API_KEY
+        binding.etApiKey.setText(effectiveKey)
     }
 
     private fun saveApiKey() {

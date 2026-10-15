@@ -217,6 +217,19 @@
                     android:textStyle="bold"
                     app:cornerRadius="12dp" />
 
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnOpenAppInfo"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="8dp"
+                    android:text="⚠️ Mở Thông tin app (Nếu công tắc bị mờ/khóa)"
+                    android:textAllCaps="false"
+                    android:textColor="@color/alert_red"
+                    android:textSize="12sp"
+                    app:cornerRadius="12dp"
+                    app:strokeColor="@color/alert_border" />
+
                 <!-- Helpful Tip Note -->
                 <LinearLayout
                     android:layout_width="match_parent"
