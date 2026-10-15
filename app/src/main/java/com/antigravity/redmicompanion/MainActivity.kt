@@ -157,13 +157,21 @@ class MainActivity : AppCompatActivity() {
             binding.tvMockRoad.text = "Nguyễn Văn A"
             binding.tvMockDistance.text = "Cuộc gọi thoại đến • Zalo"
 
-            NotificationHelper.sendVoipCallNotification(
-                context = this,
-                appName = "Zalo",
-                callerName = "Nguyễn Văn A",
-                callType = "Cuộc gọi thoại đến..."
-            )
-            Toast.makeText(this, "Đã gửi cuộc gọi Zalo mẫu: Nguyễn Văn A", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Đang phát chuông rung liên tục 8 giây lên đồng hồ...", Toast.LENGTH_SHORT).show()
+
+            lifecycleScope.launch {
+                for (cycle in 0 until 4) {
+                    NotificationHelper.sendVoipCallNotification(
+                        context = this@MainActivity,
+                        appName = "Zalo",
+                        callerName = "Nguyễn Văn A",
+                        callType = "Cuộc gọi thoại đến... (${cycle * 2}s)",
+                        ringCycle = cycle
+                    )
+                    kotlinx.coroutines.delay(2200)
+                }
+                NotificationHelper.dismissVoipCallNotification(this@MainActivity)
+            }
         }
 
         // Nút nhận diện giọng nói tiếng Việt

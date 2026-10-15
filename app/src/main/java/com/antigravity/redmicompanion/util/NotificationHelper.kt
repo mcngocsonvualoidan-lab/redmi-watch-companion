@@ -6,14 +6,21 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Build
+import android.os.CombinedVibration
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.antigravity.redmicompanion.R
 
 object NotificationHelper {
 
+    private const val TAG = "NotificationHelper"
+
     private const val MAPS_CHANNEL_ID = "redmi_maps_nav_channel"
     private const val GEMINI_CHANNEL_ID = "redmi_gemini_channel"
-    private const val CALL_CHANNEL_ID = "redmi_voip_call_channel_v2"
+    private const val CALL_CHANNEL_ID = "redmi_voip_call_channel_v3"
 
     private const val MAPS_NOTIF_ID = 1001
     private const val GEMINI_NOTIF_ID = 2002
@@ -49,15 +56,15 @@ object NotificationHelper {
                 enableLights(true)
             }
 
-            // 3. Kênh cuộc gọi Zalo / Messenger: Rung liên tục để biết có người gọi
+            // 3. Kênh cuộc gọi Zalo / Messenger: Rung liên tục với IMPORTANCE_MAX
             val callChannel = NotificationChannel(
                 CALL_CHANNEL_ID,
-                "Cuộc gọi Zalo / Messenger",
+                "Cuộc gọi Zalo / Messenger Đến",
                 NotificationManager.IMPORTANCE_MAX
             ).apply {
-                description = "Hiển thị tên người gọi Zalo và Messenger lên Redmi Watch"
+                description = "Hiển thị tên người gọi và phát xung rung liên tục sang Redmi Watch"
                 enableVibration(true)
-                vibrationPattern = longArrayOf(0, 500, 200, 500, 200, 500)
+                vibrationPattern = longArrayOf(0, 800, 250, 800)
                 lightColor = Color.GREEN
                 enableLights(true)
             }
@@ -69,14 +76,24 @@ object NotificationHelper {
     }
 
     /**
-     * Gửi chỉ đường Google Maps: Tối ưu hiển thị trực quan (Mũi tên + Khoảng cách + Tên đường)
+     * Gửi chỉ đường Google Maps sang đồng hồ
      */
-    fun sendMapsNotification(context: Context, arrowEmoji: String, title: String, distanceInfo: String, timeRemaining: String = "") {
+    fun sendMapsNotification(
+        context: Context,
+        arrowEmoji: String,
+        title: String,
+        distanceInfo: String,
+        timeRemaining: String = ""
+    ) {
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        val topTitle = "$arrowEmoji $distanceInfo"
-        val roadAndEta = if (timeRemaining.isNotBlank()) "$title (Còn: $timeRemaining)" else title
         val logoBitmap = BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher)
+
+        val topTitle = "$arrowEmoji $title"
+        val roadAndEta = if (timeRemaining.isNotBlank()) {
+            "$distanceInfo • $timeRemaining"
+        } else {
+            distanceInfo
+        }
 
         val builder = NotificationCompat.Builder(context, MAPS_CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)
@@ -94,12 +111,27 @@ object NotificationHelper {
     }
 
     /**
-     * Bắn thông báo cuộc gọi Zalo / Messenger kèm tên người gọi lên đồng hồ
+     * Bắn thông báo cuộc gọi Zalo / Messenger kèm tên người gọi và kích hoạt rung liên tục
      */
-    fun sendVoipCallNotification(context: Context, appName: String, callerName: String, callType: String) {
+    fun sendVoipCallNotification(
+        context: Context,
+        appName: String,
+        callerName: String,
+        callType: String,
+        ringCycle: Int = 0
+    ) {
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        val title = "📞 $appName: $callerName"
+        // Hủy notification cũ trước nếu là nhịp lặp lại để Mi Fitness và đồng hồ nhận diện là sự kiện MỚI và rung tiếp
+        if (ringCycle > 0) {
+            try {
+                manager.cancel(VOIP_CALL_NOTIF_ID)
+            } catch (e: Exception) {}
+        }
+
+        val ringIcons = listOf("📞", "📲", "🔔")
+        val ringIcon = ringIcons[ringCycle % ringIcons.size]
+        val title = "$ringIcon $appName: $callerName"
         val content = if (callType.isNotBlank()) callType else "Đang gọi đến..."
         val logoBitmap = BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher)
 
@@ -111,11 +143,39 @@ object NotificationHelper {
             .setStyle(NotificationCompat.BigTextStyle().bigText("$title\n$content"))
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_CALL)
-            .setVibrate(longArrayOf(0, 600, 250, 600, 250, 600))
+            .setVibrate(longArrayOf(0, 800, 250, 800))
+            .setOnlyAlertOnce(false)
             .setOngoing(false)
             .setAutoCancel(true)
 
         manager.notify(VOIP_CALL_NOTIF_ID, builder.build())
+
+        // Đồng thời rung trên thiết bị điện thoại
+        triggerDeviceVibration(context)
+    }
+
+    private fun triggerDeviceVibration(context: Context) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
+                vibratorManager?.defaultVibrator?.vibrate(
+                    CombinedVibration.createParallel(
+                        VibrationEffect.createWaveform(longArrayOf(0, 600, 200, 600), -1)
+                    )
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    vibrator?.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 600, 200, 600), -1))
+                } else {
+                    @Suppress("DEPRECATION")
+                    vibrator?.vibrate(longArrayOf(0, 600, 200, 600), -1)
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Device vibration error: ${e.message}")
+        }
     }
 
     /**

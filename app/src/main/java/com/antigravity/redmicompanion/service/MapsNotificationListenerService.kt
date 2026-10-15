@@ -117,15 +117,18 @@ class MapsNotificationListenerService : NotificationListenerService() {
     private fun startRingingLoop(appName: String, caller: String) {
         callJob?.cancel()
         callJob = CoroutineScope(Dispatchers.Default).launch {
+            var cycle = 0
             while (isCallRinging) {
                 NotificationHelper.sendVoipCallNotification(
                     context = applicationContext,
                     appName = appName,
                     callerName = caller,
-                    callType = "Đang đổ chuông..."
+                    callType = "Đang đổ chuông... (${cycle * 2}s)",
+                    ringCycle = cycle
                 )
-                // Lặp lại mỗi 3.5 giây để đồng hồ rung liên tục theo chuông điện thoại
-                delay(3500)
+                cycle++
+                // Lặp lại mỗi 2.2 giây để đồng hồ Redmi Watch rung liên tục không ngắt quãng
+                delay(2200)
             }
         }
     }
@@ -154,10 +157,23 @@ class MapsNotificationListenerService : NotificationListenerService() {
             lastInstruction = ""
             lastDistance = ""
         } else if (pkg == ZALO_PACKAGE || pkg == MESSENGER_PACKAGE) {
-            isCallRinging = false
-            callJob?.cancel()
-            callJob = null
-            NotificationHelper.dismissVoipCallNotification(applicationContext)
+            val hasActiveCall = try {
+                activeNotifications?.any { activeSbn ->
+                    (activeSbn.packageName == ZALO_PACKAGE || activeSbn.packageName == MESSENGER_PACKAGE) &&
+                    (activeSbn.notification.category == Notification.CATEGORY_CALL ||
+                     (activeSbn.notification.actions != null && activeSbn.notification.actions.isNotEmpty()))
+                } ?: false
+            } catch (e: Exception) {
+                false
+            }
+
+            if (!hasActiveCall) {
+                Log.d(TAG, "Call ended on $pkg, stopping ringing loop")
+                isCallRinging = false
+                callJob?.cancel()
+                callJob = null
+                NotificationHelper.dismissVoipCallNotification(applicationContext)
+            }
         }
     }
 }

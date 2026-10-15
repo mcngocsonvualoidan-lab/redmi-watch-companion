@@ -34,7 +34,7 @@ object UpdateManager {
     private const val API_URL = "https://api.github.com/repos/$GITHUB_REPO/releases/latest"
 
     // Phiên bản hiện tại của app
-    const val CURRENT_VERSION = "v1.6.1"
+    const val CURRENT_VERSION = "v1.6.2"
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS)
