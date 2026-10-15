@@ -49,10 +49,13 @@ class GeminiService {
                 })
             })
 
-            // Giới hạn độ dài output để phản hồi nhanh
+            // Tối ưu phản hồi tức thì và không bị ngắt quãng câu
             put("generationConfig", JSONObject().apply {
-                put("maxOutputTokens", 120)
+                put("maxOutputTokens", 800)
                 put("temperature", 0.7)
+                put("thinkingConfig", JSONObject().apply {
+                    put("thinkingBudget", 0)
+                })
             })
         }
 
