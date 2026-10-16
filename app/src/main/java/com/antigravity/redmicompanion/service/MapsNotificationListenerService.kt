@@ -77,7 +77,7 @@ class MapsNotificationListenerService : NotificationListenerService() {
             val isTextMessage = category == Notification.CATEGORY_MESSAGE ||
                     category == "msg" ||
                     category == Notification.CATEGORY_SOCIAL ||
-                    extras.containsKey(Notification.EXTRA_MESSAGING_STYLE_USER) ||
+                    extras.containsKey("android.messagingStyleUser") ||
                     extras.containsKey(Notification.EXTRA_MESSAGES) ||
                     (actions != null && actions.any { it.remoteInputs != null && it.remoteInputs.isNotEmpty() })
 
