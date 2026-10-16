@@ -34,13 +34,9 @@ class WeatherAlarmReceiver : BroadcastReceiver() {
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
+                val weatherService = WeatherService()
                 val gemini = GeminiService()
-                val prompt = "Tóm tắt dự báo thời tiết hôm nay tại $location thật ngắn gọn cho màn hình đồng hồ thông minh: Nhiệt độ min-max, trời nắng hay mưa, lời khuyên cần mang áo mưa hay chống nắng (dưới 28 từ, bắt đầu bằng biểu tượng thời tiết sinh động)."
-                val result = gemini.askGemini(apiKey, prompt)
-
-                val summary = result.getOrElse {
-                    "Thời tiết $location hôm nay: 28°C - 34°C, ngày nắng ráo, chiều tối có thể mưa rào thoáng qua. Nhớ mang theo áo mưa!"
-                }
+                val summary = weatherService.generateWeatherSummary(location, apiKey, gemini)
 
                 NotificationHelper.sendWeatherNotification(
                     context = context,

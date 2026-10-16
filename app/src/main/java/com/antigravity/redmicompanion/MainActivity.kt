@@ -23,6 +23,7 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
 import com.antigravity.redmicompanion.databinding.ActivityMainBinding
 import com.antigravity.redmicompanion.service.GeminiService
+import com.antigravity.redmicompanion.service.WeatherService
 import com.antigravity.redmicompanion.util.NotificationHelper
 import com.antigravity.redmicompanion.util.UpdateManager
 import com.antigravity.redmicompanion.util.WeatherScheduler
@@ -150,15 +151,11 @@ class MainActivity : AppCompatActivity() {
             val loc = binding.etWeatherLocation.text?.toString()?.trim() ?: WeatherScheduler.DEFAULT_LOCATION
             val inputKey = binding.etApiKey.text?.toString()?.trim() ?: ""
 
-            Toast.makeText(this, "Đang tạo bản tin thời tiết $loc...", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Đang lấy dữ liệu thời tiết thực tế $loc...", Toast.LENGTH_SHORT).show()
 
             lifecycleScope.launch {
-                val prompt = "Tóm tắt dự báo thời tiết hôm nay tại $loc thật ngắn gọn cho màn hình đồng hồ đeo tay: Nhiệt độ thấp nhất - cao nhất, nắng hay mưa, lời khuyên cần mang áo mưa hay chống nắng (dưới 28 từ, bắt đầu bằng icon thời tiết)."
-                val result = geminiService.askGemini(inputKey, prompt)
-
-                val summary = result.getOrElse {
-                    "Thời tiết $loc hôm nay: 28°C - 34°C, ngày nắng ráo, chiều tối có mưa rào thoáng qua. Nhớ mang theo áo mưa!"
-                }
+                val weatherService = WeatherService()
+                val summary = weatherService.generateWeatherSummary(loc, inputKey, geminiService)
 
                 // Cập nhật mockup đồng hồ trực quan
                 binding.tvMockArrow.text = "🌤️"
@@ -171,7 +168,7 @@ class MainActivity : AppCompatActivity() {
                     title = "🌤️ Thời Tiết Hôm Nay ($loc)",
                     summary = summary
                 )
-                Toast.makeText(this@MainActivity, "Đã gửi bản tin thời tiết lên Redmi Watch!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MainActivity, "Đã gửi bản tin thời tiết thực tế lên Redmi Watch!", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -376,7 +373,19 @@ class MainActivity : AppCompatActivity() {
         binding.btnAskGemini.isEnabled = false
 
         lifecycleScope.launch {
-            val result = geminiService.askGemini(inputKey, prompt)
+            val enrichedPrompt = if (prompt.contains("thời tiết", ignoreCase = true) || prompt.contains("nhiệt độ", ignoreCase = true) || prompt.contains("mưa", ignoreCase = true)) {
+                val loc = binding.etWeatherLocation.text?.toString()?.trim() ?: WeatherScheduler.DEFAULT_LOCATION
+                val realWeather = WeatherService().getLiveWeather(loc).getOrNull()
+                if (realWeather != null) {
+                    "$prompt (Dữ liệu khí tượng vệ tinh thực tế tại ${realWeather.locationName} lúc này: Hiện tại ${realWeather.currentTemp.toInt()}°C, thấp nhất ${realWeather.minTemp.toInt()}°C - cao nhất ${realWeather.maxTemp.toInt()}°C, tình trạng: ${realWeather.conditionDescription}, khả năng mưa: ${realWeather.rainProbability}%)."
+                } else {
+                    prompt
+                }
+            } else {
+                prompt
+            }
+
+            val result = geminiService.askGemini(inputKey, enrichedPrompt)
             binding.btnAskGemini.isEnabled = true
 
             result.onSuccess { answer ->
