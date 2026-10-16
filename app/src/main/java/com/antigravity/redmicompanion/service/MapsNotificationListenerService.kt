@@ -64,7 +64,7 @@ class MapsNotificationListenerService : NotificationListenerService() {
         }
 
         // ==========================================
-        // 2. XỬ LÝ CUỘC GỌI ZALO & MESSENGER (Hiện tên người gọi)
+        // 2. XỬ LÝ CUỘC GỌI ZALO & MESSENGER (Chỉ bắt CUỘC GỌI, bỏ qua TIN NHẮN)
         // ==========================================
         if (pkg == ZALO_PACKAGE || pkg == MESSENGER_PACKAGE) {
             val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: ""
@@ -72,22 +72,49 @@ class MapsNotificationListenerService : NotificationListenerService() {
             val category = notification.category
             val actions = notification.actions
 
-            // Nhận diện cuộc gọi qua nút bấm "Trả lời" / "Từ chối" hoặc category cuộc gọi
-            val hasCallAction = actions != null && actions.any { action ->
-                val at = action.title?.toString()?.lowercase() ?: ""
-                at.contains("từ chối") || at.contains("trả lời") ||
-                at.contains("decline") || at.contains("reject") ||
-                at.contains("answer")
+            // 1. Kiểm tra nếu là thông báo tin nhắn thông thường -> BỎ QUA NGAY
+            // Tin nhắn thường có category là CATEGORY_MESSAGE hoặc có nút bấm "Trả lời" kèm ô nhập chữ (RemoteInput)
+            val isTextMessage = category == Notification.CATEGORY_MESSAGE ||
+                    category == "msg" ||
+                    category == Notification.CATEGORY_SOCIAL ||
+                    extras.containsKey(Notification.EXTRA_MESSAGING_STYLE_USER) ||
+                    extras.containsKey(Notification.EXTRA_MESSAGES) ||
+                    (actions != null && actions.any { it.remoteInputs != null && it.remoteInputs.isNotEmpty() })
+
+            if (isTextMessage) {
+                // Đây là tin nhắn văn bản thông thường, không can thiệp để Mi Fitness tự báo 1 nhịp chuẩn
+                return
             }
 
-            val isCall = hasCallAction ||
-                    category == Notification.CATEGORY_CALL ||
-                    text.contains("cuộc gọi", ignoreCase = true) ||
-                    title.contains("cuộc gọi", ignoreCase = true) ||
-                    text.contains("đang gọi", ignoreCase = true) ||
-                    title.contains("đang gọi", ignoreCase = true) ||
-                    text.contains("calling", ignoreCase = true) ||
-                    text.contains("incoming", ignoreCase = true)
+            // 2. Nhận diện cuộc gọi VoIP thực thụ:
+            // - Có category là CATEGORY_CALL
+            // - Hoặc có nút bấm Từ chối / Nghe / Trả lời (KHÔNG CÓ ô gõ phím RemoteInput)
+            // - Hoặc tiêu đề / nội dung chứa từ khóa cuộc gọi đến
+            val hasCallCategory = category == Notification.CATEGORY_CALL
+
+            val hasCallAction = actions != null && actions.any { action ->
+                val hasRemoteInput = action.remoteInputs != null && action.remoteInputs.isNotEmpty()
+                if (hasRemoteInput) return@any false
+                val at = action.title?.toString()?.lowercase() ?: ""
+                at.contains("từ chối") || at.contains("nghe") || at.contains("chấp nhận") ||
+                at.contains("decline") || at.contains("reject") || at.contains("answer") ||
+                at == "trả lời"
+            }
+
+            val hasCallKeyword = (
+                title.contains("cuộc gọi đến", ignoreCase = true) ||
+                text.contains("cuộc gọi đến", ignoreCase = true) ||
+                title.contains("cuộc gọi thoại", ignoreCase = true) ||
+                text.contains("cuộc gọi thoại", ignoreCase = true) ||
+                title.contains("cuộc gọi video", ignoreCase = true) ||
+                text.contains("cuộc gọi video", ignoreCase = true) ||
+                title.contains("đang gọi cho bạn", ignoreCase = true) ||
+                text.contains("đang gọi cho bạn", ignoreCase = true) ||
+                title.contains("incoming call", ignoreCase = true) ||
+                text.contains("incoming call", ignoreCase = true)
+            )
+
+            val isCall = hasCallCategory || (hasCallAction && hasCallKeyword) || (hasCallAction && actions != null && actions.size >= 2)
 
             if (isCall) {
                 val appName = if (pkg == ZALO_PACKAGE) "Zalo" else "Messenger"
@@ -118,7 +145,8 @@ class MapsNotificationListenerService : NotificationListenerService() {
         callJob?.cancel()
         callJob = CoroutineScope(Dispatchers.Default).launch {
             var cycle = 0
-            while (isCallRinging) {
+            val maxCycles = 15 // Tự động ngắt sau ~33 giây nếu không nhấc máy để tránh rung vô tận
+            while (isCallRinging && cycle < maxCycles) {
                 NotificationHelper.sendVoipCallNotification(
                     context = applicationContext,
                     appName = appName,
@@ -130,6 +158,9 @@ class MapsNotificationListenerService : NotificationListenerService() {
                 // Lặp lại mỗi 2.2 giây để đồng hồ Redmi Watch rung liên tục không ngắt quãng
                 delay(2200)
             }
+            // Tự động kết thúc nếu quá thời gian đổ chuông
+            isCallRinging = false
+            NotificationHelper.dismissVoipCallNotification(applicationContext)
         }
     }
 
@@ -159,9 +190,20 @@ class MapsNotificationListenerService : NotificationListenerService() {
         } else if (pkg == ZALO_PACKAGE || pkg == MESSENGER_PACKAGE) {
             val hasActiveCall = try {
                 activeNotifications?.any { activeSbn ->
-                    (activeSbn.packageName == ZALO_PACKAGE || activeSbn.packageName == MESSENGER_PACKAGE) &&
-                    (activeSbn.notification.category == Notification.CATEGORY_CALL ||
-                     (activeSbn.notification.actions != null && activeSbn.notification.actions.isNotEmpty()))
+                    if (activeSbn.packageName != ZALO_PACKAGE && activeSbn.packageName != MESSENGER_PACKAGE) return@any false
+                    val notif = activeSbn.notification
+                    val actions = notif.actions
+                    val isMsg = notif.category == Notification.CATEGORY_MESSAGE ||
+                            (actions != null && actions.any { it.remoteInputs != null && it.remoteInputs.isNotEmpty() })
+                    if (isMsg) return@any false
+
+                    val isCallCat = notif.category == Notification.CATEGORY_CALL
+                    val hasCallAct = actions != null && actions.any { act ->
+                        val hasRemoteInput = act.remoteInputs != null && act.remoteInputs.isNotEmpty()
+                        val at = act.title?.toString()?.lowercase() ?: ""
+                        !hasRemoteInput && (at.contains("từ chối") || at.contains("nghe") || at.contains("decline"))
+                    }
+                    isCallCat || hasCallAct
                 } ?: false
             } catch (e: Exception) {
                 false
